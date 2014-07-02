@@ -6,5 +6,5 @@ setup(name='Thing Tracker Network Collector',
       author='Johannes Reinhardt',
       author_email='jreinhardt@ist-dein-freund.de',
       url='http://www.python.org/sigs/distutils-sig/',
-      install_requires=['Flask','Whoosh','pymongo'],
+      install_requires=['Flask','Whoosh','pymongo','Flask-WTF','requests','jsonschema'],
      )
