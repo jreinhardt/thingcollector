@@ -34,7 +34,7 @@ else:
     ix = whoosh.index.open_dir(whoosh_dir)
 
 app = Flask(__name__)
-app.secret_key = environ["SECRET_KEY"]
+app.secret_key = open(join(environ["OPENSHIFT_DATA_DIR"],"secret_key")).read()
 
 class SubmissionForm(Form):
     url = TextField("url",validators=[DataRequired(),URL(require_tld=True)])
