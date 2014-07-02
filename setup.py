@@ -1,10 +1,10 @@
 from setuptools import setup
 
-setup(name='YourAppName',
+setup(name='Thing Tracker Network Collector',
       version='1.0',
-      description='OpenShift App',
-      author='Your Name',
-      author_email='example@example.com',
+      description='A web app to collect thing trackers',
+      author='Johannes Reinhardt',
+      author_email='jreinhardt@ist-dein-freund.de',
       url='http://www.python.org/sigs/distutils-sig/',
-#      install_requires=['Django>=1.3'],
+      install_requires=['Flask','Whoosh','pymongo'],
      )
