@@ -5,6 +5,7 @@ from shutil import rmtree
 import os.path
 #import whoosh
 #import whoosh.fields, whoosh.index
+import pymongo
 from pymongo import MongoClient
 import sys
 
@@ -25,26 +26,17 @@ import sys
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    exctype, value = None, None
-    try:
-        mongoclient = pymongo.MongoClient(environ["OPENSHIFT_MONGODB_DB_URL"])
+mongoclient = pymongo.MongoClient(environ["OPENSHIFT_MONGODB_DB_URL"])
+db = mongoclient.database
 
-        db = mongoclient.database
-    except:
-        exctype, value = sys.exc_info()[:2]
-    return " ".join([exctype,value])
+@app.route('/eimer/add/<thing>')
+def add_to_collection(thing):
+    db.eimer.insert({"thing" : thing})
+    return "%s added" % thing
 
-#
-#@app.route('/eimer/add/<thing>')
-#def add_to_collection(thing):
-#    db.eimer.insert({"thing" : thing})
-#    return "%s added" % thing
-#
-#@app.route('/eimer/view')
-#def view_collection():
-#    return " ".join([doc["thing"] for doc in db.eimer.find()])
+@app.route('/eimer/view')
+def view_collection():
+    return " ".join([doc["thing"] for doc in db.eimer.find()])
 
 
 if __name__ == '__main__':
