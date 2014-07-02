@@ -7,20 +7,20 @@ import whoosh
 import whoosh.fields, whoosh.index
 from pymongo import MongoClient
 
-whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
-
-if True or not exists(whoosh_dir):
-    rmtree(whoosh_dir)
-    mkdir(whoosh_dir)
-
-    schema = whoosh.fields.Schema(
-        title = whoosh.fields.TEXT(),
-        authors = whoosh.fields.TEXT(),
-        description = whoosh.fields.TEXT()
-    )
-    ix = whoosh.index.create_in(whoosh_dir, schema)
-else:
-    ix = whoosh.index.open_ix(whoosh_dir)
+#whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
+#
+#if True or not exists(whoosh_dir):
+#    rmtree(whoosh_dir)
+#    mkdir(whoosh_dir)
+#
+#    schema = whoosh.fields.Schema(
+#        title = whoosh.fields.TEXT(),
+#        authors = whoosh.fields.TEXT(),
+#        description = whoosh.fields.TEXT()
+#    )
+#    ix = whoosh.index.create_in(whoosh_dir, schema)
+#else:
+#    ix = whoosh.index.open_ix(whoosh_dir)
 
 mongoclient = pymongo.MongoClient(environ["OPENSHIFT_MONGODB_DB_URL"])
 
