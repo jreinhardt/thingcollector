@@ -13,12 +13,15 @@ import pymongo
 from pymongo import MongoClient
 import sys
 import requests
-from jsonschema import validate as json_validate
+from jsonschema import Draft3Validator
 import json
 
 whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
 
-ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema.json")).read())
+
+#TODO: somethings phishy with pythons json load, as the results depends on the case of the boolean values
+ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema_true.json")).read())
+validator = Draft3Validator(ttn_schema)
 
 if False or not exists(whoosh_dir):
     if exists(whoosh_dir):
@@ -44,10 +47,9 @@ def submit():
     form = SubmissionForm()
     if form.validate_on_submit():
         r = requests.get(form.url.data)
-        try:
-            json_validate(r.json(),ttn_schema)
-        except:
-            flash("%s not conforming to spec: %s" % (form.url.data,str(sys.exc_info()[1])))
+        if not validator.is_valid(r.json()):
+            for error in validator.iter_errors(r.json()):
+                flash("%s not conforming to spec: %s" % (form.url.data,error.message))
         else:
             flash("%s successfully submitted" % form.url.data)
         return redirect("/submit")
