@@ -1,0 +1,4 @@
+setup
+=====
+
+create a textfile with name secret_key in your OPENSHIFT_DATA_DIR and insert a secret key
