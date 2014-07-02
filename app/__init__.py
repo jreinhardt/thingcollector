@@ -34,7 +34,7 @@ def index():
         db = mongoclient.database
     except:
         exctype, value = sys.exc_info()[:2]
-    return " ".join(exctype,value)
+    return " ".join([exctype,value])
 
 #
 #@app.route('/eimer/add/<thing>')
