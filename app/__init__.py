@@ -20,7 +20,7 @@ whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
 
 ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema.json")).read())
 
-if False:
+if False or not exists(whoosh_dir):
     if exists(whoosh_dir):
         rmtree(whoosh_dir)
     mkdir(whoosh_dir)
