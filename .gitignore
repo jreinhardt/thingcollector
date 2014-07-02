@@ -1,0 +1,8 @@
+.openshift
+bin
+include
+index/**/*
+lib
+local
+**/*.swp
+**/*.pyc
