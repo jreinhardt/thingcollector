@@ -41,7 +41,6 @@ class SubmissionForm(Form):
 
 @app.route('/submit', methods=('GET', 'POST'))
 def submit():
-    print request.method
     form = SubmissionForm()
     if form.validate_on_submit():
         r = requests.get(form.url.data)
@@ -53,6 +52,10 @@ def submit():
             flash("%s successfully submitted" % form.url.data)
         return redirect("/submit")
     return render_template('submit.html', form=form)
+
+@app.route('/')
+def index():
+    return redirect('/submit')
 
 #mongoclient = pymongo.MongoClient(environ["OPENSHIFT_MONGODB_DB_URL"])
 #db = mongoclient.database
