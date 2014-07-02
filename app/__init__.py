@@ -25,7 +25,7 @@ import sys
 
 app = Flask(__name__)
 
-@app.oute('/')
+@app.route('/')
 def index():
     exctype, value = None, None
     try:
