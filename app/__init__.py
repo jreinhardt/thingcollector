@@ -56,7 +56,7 @@ thing_parser = MultifieldParser(['title','description','tags','licenses'],schema
 tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
 
 app = Flask(__name__)
-app.config.from_pyfile(environ['THINGCOLLECTOR_SETTINGS'])
+app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
 
 
 def scan_tracker(url):
