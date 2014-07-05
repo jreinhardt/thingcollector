@@ -69,6 +69,10 @@ def scan_tracker(url):
 
     tracker = r.json()
 
+    print url
+
+    print tracker
+
     if not validator.is_valid(tracker):
         print "Skipping invalid tracker %s" % tracker["url"]
         for error in validator.iter_errors(tracker):
@@ -83,11 +87,12 @@ def scan_tracker(url):
     with tracker_idx.writer() as writer:
         for opt in ["description"]:
             if not opt in tracker:
-                tracker[opt] = ""
+                tracker[opt] = u""
+
         if not "updated" in tracker:
             tracker["updated"] = datetime.now()
         else:
-            datetime.strptime(tracker["updated"][:-6],"%Y-%m-%dT%H:%M:%S")
+            tracker["updated"] = datetime.strptime(tracker["updated"][:-6],"%Y-%m-%dT%H:%M:%S")
 
         tracker["accessed"] = datetime.now()
 
