@@ -9,9 +9,17 @@
 		{{ form.query.label }} {{ form.query(size=20) }}
 		<input type="submit" value="Go">
 	</form>
-	{% for result in results %}
-		<li>{{ result.title }}</li>
-	{% endfor %}
+	{% if results != [] %}
+		{% for result in results %}
+			{% if result.url != "" %}
+				<li><a href={{result.url}}>{{ result.title }}</a></li>
+			{% else %}
+				<li>{{ result.title }}</li>
+			{% endif %}
+		{% endfor %}
+	{% else %}
+		No results found
+	{% endif %}
 	</ul>
 	</body>
 </html>

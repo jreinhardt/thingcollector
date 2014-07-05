@@ -1,0 +1,29 @@
+{
+   "version":0.0,
+   "id" : {{ collector["id"] }},
+   "url" : {{ collector["url"] }},
+   "description" : {{ collector["description"] }},
+   "updated" : {{ collector["updated"] }},
+   "thingsCount" : 0,
+   "trackersCount" : {{ len(trackers) }},
+   "trackersTraversalDepth" : 1,
+   "maintainers" : [
+      {
+         {% if collector.maintainer_url is defined %}
+            "url" :  {{ collector.maintainer_url }},
+         {% endif %}
+         {% if collector.maintainer_email is defined %}
+            "url" :  {{ collector.maintainer_email }},
+         {% endif %}
+         "name" : {{ collector.maintainer_name }}
+      }
+   ],
+   "things":[],
+   "trackers":[
+      {% for tracker in trackers %}
+      {
+         "url" : {{ tracker.url }}
+      }
+      {% endfor %}
+   ]
+}
