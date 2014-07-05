@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+	<h1>Known Things</h1>
+	<ul class=flashes>
+	{% for thing in things %}
+		<li>{{ thing.title }}</li>
+	{% endfor %}
+	</ul>
+	</body>
+</html>

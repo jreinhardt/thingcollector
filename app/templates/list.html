@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+	<h1>Known Trackers</h1>
+	<ul class=flashes>
+	{% for tracker in trackers %}
+		<li>{{ tracker.url }}</li>
+	{% endfor %}
+	</ul>
+	</body>
+</html>

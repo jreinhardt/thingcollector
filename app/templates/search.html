@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+	<h1>Search things</h1>
+	<form method="POST" action="/search">
+		{{ form.csrf_token }}
+		{{ form.query.label }} {{ form.query(size=20) }}
+		<input type="submit" value="Go">
+	</form>
+	{% for result in results %}
+		<li>{{ result.title }}</li>
+	{% endfor %}
+	</ul>
+	</body>
+</html>
