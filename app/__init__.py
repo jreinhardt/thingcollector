@@ -55,6 +55,10 @@ else:
 thing_parser = MultifieldParser(['title','description','tags','licenses'],schema = thing_idx.schema)
 tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
 
+app = Flask(__name__)
+app.config.from_pyfile(environ['THINGCOLLECTOR_SETTINGS'])
+
+
 def scan_tracker(url):
     r = requests.get(url)
 
@@ -107,10 +111,6 @@ def scan_tracker(url):
         for subtracker in tracker["trackers"]:
             scan_tracker(subtracker["url"])
 
-
-app = Flask(__name__)
-app.secret_key = open(join(environ["OPENSHIFT_DATA_DIR"],"secret_key")).read()
-
 class SubmissionForm(Form):
     url = TextField("url",validators=[DataRequired(),URL(require_tld=True)])
 
@@ -128,16 +128,16 @@ def submit():
 
 @app.route('/')
 def index():
-    return redirect('/submit')
+    return redirect('/search')
 
-@app.route('/trackers')
-def list():
+@app.route('/list/trackers')
+def list_trackers():
     searcher = tracker_idx.searcher()
     trackers = [tracker for tracker in searcher.all_stored_fields()]
     return render_template('list.html',trackers=trackers)
 
-@app.route('/things')
-def things():
+@app.route('/list/things')
+def list_things():
     searcher = thing_idx.searcher()
     things = [thing for thing in searcher.all_stored_fields()]
     return render_template('things.html',things=things)
