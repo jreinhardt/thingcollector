@@ -81,11 +81,21 @@ def scan_tracker(url):
             return
 
     with tracker_idx.writer() as writer:
+        for opt in ["description"]:
+            if not opt in tracker:
+                tracker[opt] = ""
+        if not "updated" in tracker:
+            tracker["updated"] = datetime.now()
+        else:
+            datetime.strptime(tracker["updated"][:-6],"%Y-%m-%dT%H:%M:%S")
+
+        tracker["accessed"] = datetime.now()
+
         writer.add_document(
             url = tracker["url"],
             description = tracker["description"],
-            accessed = datetime.now(),
-            updated = datetime.strptime(tracker["updated"][:-6],"%Y-%m-%dT%H:%M:%S")
+            accessed = tracker["accessed"],
+            updated = tracker["updated"]
         )
     if "things" in tracker:
         with thing_idx.writer() as writer:
