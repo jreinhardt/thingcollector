@@ -1,2 +1,3 @@
 #!/bin/sh
+echo "Setting up config file"
 export THINGCOLLECTOR_SETTINGS=$OPENSHIFT_DATA_DIR/collector.cfg
