@@ -60,29 +60,26 @@ app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
 
 
 def scan_tracker(url):
+    messages = []
     r = requests.get(url)
 
     #skip unreachable trackers
     if not r.status_code == requests.codes.ok:
-        print "Skipping unreachable tracker %s" % url
-        return
+        messages.append("Skipping unreachable tracker %s" % url)
+        return messages
 
     tracker = r.json()
 
-    print url
-
-    print tracker
-
     if not validator.is_valid(tracker):
-        print "Skipping invalid tracker %s" % tracker["url"]
+        messages.append("Skipping invalid tracker %s" % tracker["url"])
         for error in validator.iter_errors(tracker):
-            print "%s not conforming to spec: %s" % (url,error.message)
-        return
+            messages.append("%s not conforming to spec: %s" % (url,error.message))
+        return messages
 
     with tracker_idx.searcher() as searcher:
         if len(searcher.search(Term("url",url))) == 1:
-            print "Skipping known tracker %s" % url
-            return
+            messages.append("Skipping known tracker %s" % url)
+            return messages
 
     with tracker_idx.writer() as writer:
         for opt in ["description"]:
@@ -124,7 +121,8 @@ def scan_tracker(url):
 
     if "trackers" in tracker:
         for subtracker in tracker["trackers"]:
-            scan_tracker(subtracker["url"])
+            messages += scan_tracker(subtracker["url"])
+    return messages
 
 class SubmissionForm(Form):
     url = TextField("url",validators=[DataRequired(),URL(require_tld=True)])
@@ -135,11 +133,14 @@ class SearchForm(Form):
 
 @app.route('/submit', methods=('GET', 'POST'))
 def submit():
+    messages = []
     form = SubmissionForm()
     if form.validate_on_submit():
-        scan_tracker(form.url.data)
-        return redirect("/submit")
-    return render_template('submit.html', form=form)
+        messages = scan_tracker(form.url.data)
+        print messages
+        if len(messages) == 0:
+            return redirect("/submit")
+    return render_template('submit.html', form=form, messages = messages)
 
 @app.route('/')
 def index():
