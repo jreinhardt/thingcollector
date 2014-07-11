@@ -5,6 +5,23 @@
 		<link href="/static/bootstrap.min.css" rel="stylesheet">
 		<script src="/static/jquery-2.1.1.min.js"></script>
 		<script src="/static/bootstrap.min.js"></script>
+		{% block tracking %}
+		{% if config.piwik_url is defined and config.piwik_id is defined %}
+			<script type="text/javascript">
+				var _paq = _paq || [];
+					_paq.push(['trackPageView']);
+				_paq.push(['enableLinkTracking']);
+					(function() {
+					 var u=(("https:" == document.location.protocol) ? "https" : "http") + "://{{ config.piwik_url }}/";
+					 _paq.push(['setTrackerUrl', u+'piwik.php']);
+					 _paq.push(['setSiteId', {{ config.piwik_id }}]);
+					 var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0]; g.type='text/javascript';
+					 g.defer=true; g.async=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+				 })();
+			</script>
+			<noscript><p><img src="http://{{ config.piwik_url }}/piwik.php?idsite={{ config.piwik_id }}" style="border:0;" alt="" /></p></noscript>
+		{% endif %}
+		{% endblock %}
 		<style>
 		body { padding-top: 50px; }
 		</style>

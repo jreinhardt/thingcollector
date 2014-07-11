@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, g
 from flask_wtf import Form
 from wtforms import TextField
 from wtforms.validators import DataRequired, URL
@@ -58,6 +58,10 @@ tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
 app = Flask(__name__)
 app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
 
+config = {}
+if 'PIWIK_URL' in app.config and 'PIWIK_ID' in app.config:
+    config['piwik_url'] = app.config['PIWIK_URL']
+    config['piwik_id'] = app.config['PIWIK_ID']
 
 def scan_tracker(url):
     messages = []
@@ -139,13 +143,13 @@ def index():
 def list_trackers():
     searcher = tracker_idx.searcher()
     trackers = [tracker for tracker in searcher.all_stored_fields()]
-    return render_template('list.html',trackers=trackers)
+    return render_template('list.html',trackers=trackers,config=config)
 
 @app.route('/list/things')
 def list_things():
     searcher = thing_idx.searcher()
     things = [thing for thing in searcher.all_stored_fields()]
-    return render_template('things.html',things=things)
+    return render_template('things.html',things=things,config=config)
 
 @app.route('/search', methods=('GET', 'POST'))
 def search():
@@ -160,7 +164,7 @@ def search():
         hits = searcher.search(thing_parser.parse(query))
         for i in range(hits.scored_length()):
             results.append(hits[i].fields())
-    return render_template('search.html', form=form,query=query,results=results)
+    return render_template('search.html', form=form,query=query,results=results,config=config)
 
 @app.route('/submit', methods=('GET', 'POST'))
 def submit():
@@ -171,7 +175,7 @@ def submit():
         print messages
         if len(messages) == 0:
             return redirect(url_for("submit"))
-    return render_template('submit.html', form=form, messages = messages)
+    return render_template('submit.html', form=form, messages = messages,config=config)
 
 if __name__ == '__main__':
     app.run()
