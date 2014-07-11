@@ -1,19 +1,30 @@
-<!DOCTYPE html>
-<html>
-	<head>
-	</head>
-	<body>
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>Submit Trackers</h1>
 	{% if messages %}
-		<ul class=flashes>
-		{% for message in messages %}
-			<li>{{ message }}</li>
-		{% endfor %}
-		</ul>
+		<div class="form-group has-error">
+			<form method="POST" action="/submit">
+				{{ form.csrf_token }}
+				{{ form.url.label }} {{ form.url(size=20) }}
+				<input type="submit" value="Go">
+			</form>
+		</div>
+		<h2>Errors</h2>
+		<table class="table table-striped table-bordered">
+			<tbody>
+			{% for message in messages %}
+			<tr><td>{{ message }}</td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+	<div class="form-group">
+		<form method="POST" action="/submit">
+			{{ form.csrf_token }}
+			{{ form.url.label }} {{ form.url(size=20) }}
+			<input type="submit" value="Go">
+		</form>
+	</div>
 	{% endif %}
-	<form method="POST" action="/submit">
-		{{ form.csrf_token }}
-		{{ form.url.label }} {{ form.url(size=20) }}
-		<input type="submit" value="Go">
-	</form>
-	</body>
-</html>
+{% endblock %}

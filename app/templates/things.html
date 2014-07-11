@@ -1,13 +1,12 @@
-<!DOCTYPE html>
-<html>
-	<head>
-	</head>
-	<body>
+{% extends "base.html" %}
+
+{% block content %}
 	<h1>Known Things</h1>
-	<ul class=flashes>
-	{% for thing in things %}
-		<li>{{ thing.title }}</li>
-	{% endfor %}
-	</ul>
-	</body>
-</html>
+	<table class="table table-striped table-bordered">
+		<tbody>
+		{% for thing in things %}
+			<tr><td>{{ thing.title }}</td></tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

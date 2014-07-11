@@ -1,25 +1,31 @@
-<!DOCTYPE html>
-<html>
-	<head>
-	</head>
-	<body>
-	<h1>Search things</h1>
-	<form method="POST" action="/search">
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>Search</h1>
+	<label>Search the thingtracker network</label>
+
+	<form class="form-search" method="POST" action="/search">
 		{{ form.csrf_token }}
-		{{ form.query.label }} {{ form.query(size=20,value=query) }}
-		<input type="submit" value="Go">
+		{{ form.query(size=20,value=query) }}
+		<input type="submit" class="btn btn-primary" value="Go">
 	</form>
+
 	{% if results != [] %}
-		{% for result in results %}
-			{% if result.url != "" %}
-				<li><a href={{result.url}}>{{ result.title }}</a></li>
-			{% else %}
-				<li>{{ result.title }}</li>
-			{% endif %}
-		{% endfor %}
+		<h2>Results</h2>
+		<table class="table table-striped table-bordered">
+			<tbody>
+			{% for result in results %}
+				<tr>
+				{% if result.url != "" %}
+					<td><a href={{result.url}}>{{ result.title }}</a></td>
+				{% else %}
+					<td>{{ result.title }}</td>
+				{% endif %}
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
 	{% else %}
-		No results found
+		<h2>No results found</h2>
 	{% endif %}
-	</ul>
-	</body>
-</html>
+{% endblock %}

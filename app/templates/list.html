@@ -1,13 +1,12 @@
-<!DOCTYPE html>
-<html>
-	<head>
-	</head>
-	<body>
+{% extends "base.html" %}
+
+{% block content %}
 	<h1>Known Trackers</h1>
-	<ul class=flashes>
-	{% for tracker in trackers %}
-		<li>{{ tracker.url }}</li>
-	{% endfor %}
-	</ul>
-	</body>
-</html>
+	<table class="table table-striped table-bordered">
+		<tbody>
+		{% for tracker in trackers %}
+			<tr><td>{{ tracker.url }}</td></tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
