@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect
+from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_wtf import Form
 from wtforms import TextField
 from wtforms.validators import DataRequired, URL
@@ -131,20 +131,9 @@ class SearchForm(Form):
     query = TextField("query",validators=[DataRequired()])
 
 
-@app.route('/submit', methods=('GET', 'POST'))
-def submit():
-    messages = []
-    form = SubmissionForm()
-    if form.validate_on_submit():
-        messages = scan_tracker(form.url.data)
-        print messages
-        if len(messages) == 0:
-            return redirect("/submit")
-    return render_template('submit.html', form=form, messages = messages)
-
 @app.route('/')
 def index():
-    return redirect('/search')
+    return redirect(url_for("search"))
 
 @app.route('/list/trackers')
 def list_trackers():
@@ -161,13 +150,28 @@ def list_things():
 @app.route('/search', methods=('GET', 'POST'))
 def search():
     results = []
+    query = request.args.get('q',None)
     form = SearchForm()
+
+    if query is None and form.validate_on_submit():
+            return redirect(url_for('search',q=form.query.data))
+
+    with thing_idx.searcher() as searcher:
+        hits = searcher.search(thing_parser.parse(query))
+        for i in range(hits.scored_length()):
+            results.append(hits[i].fields())
+    return render_template('search.html', form=form,query=query,results=results)
+
+@app.route('/submit', methods=('GET', 'POST'))
+def submit():
+    messages = []
+    form = SubmissionForm()
     if form.validate_on_submit():
-        with thing_idx.searcher() as searcher:
-            hits = searcher.search(thing_parser.parse(form.query.data))
-            for i in range(hits.scored_length()):
-                results.append(hits[i].fields())
-    return render_template('search.html', form=form, results=results)
+        messages = scan_tracker(form.url.data)
+        print messages
+        if len(messages) == 0:
+            return redirect(url_for("submit"))
+    return render_template('submit.html', form=form, messages = messages)
 
 if __name__ == '__main__':
     app.run()

@@ -3,12 +3,7 @@
 	<head>
 	</head>
 	<body>
-	<h1>Search things</h1>
-	<form method="POST" action="/search">
-		{{ form.csrf_token }}
-		{{ form.query.label }} {{ form.query(size=20,value=query) }}
-		<input type="submit" value="Go">
-	</form>
+	<h1>Results</h1>
 	{% if results != [] %}
 		{% for result in results %}
 			{% if result.url != "" %}
