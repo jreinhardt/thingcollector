@@ -150,10 +150,10 @@ def list_things():
 @app.route('/search', methods=('GET', 'POST'))
 def search():
     results = []
-    query = request.args.get('q',None)
+    query = request.args.get('q','')
     form = SearchForm()
 
-    if query is None and form.validate_on_submit():
+    if query == '' and form.validate_on_submit():
             return redirect(url_for('search',q=form.query.data))
 
     with thing_idx.searcher() as searcher:
