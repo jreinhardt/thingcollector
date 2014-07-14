@@ -6,3 +6,4 @@ lib
 local
 **/*.swp
 **/*.pyc
+collector.cfg
