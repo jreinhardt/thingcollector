@@ -1,6 +1,5 @@
-**************
 Thingcollector
-**************
+==============
 
 The thingcollector is a web application that provides a full text search for
 the [thingtracker network](https://thingtracker.net). It is written in
@@ -9,16 +8,18 @@ the [thingtracker network](https://thingtracker.net). It is written in
 [OpenShift](https://www.openshift.com/) in mind. The frontend is based on
 [bootstrap](http://getbootstrap.com/).
 
+It is licensed under the [AGPL3](http://www.gnu.org/licenses/agpl.html).
+
 
 Register for OpenShift
-======================
+----------------------
 
 Go to the [OpenShift website](https://www.openshift.com/) and create a new
 account if you don't have one already. The free plan allows you to use up to 3
 "gears". For a thingcollector instance we only need one.
 
 Spin up a a OpenShift gear
-==========================
+--------------------------
 
 This can be done via the web interface as well, but this is how to do it on the
 command line. First install the [RHC client
@@ -26,7 +27,7 @@ tools](https://www.openshift.com/developers/rhc-client-tools-install) if you
 have not already done so.
 
 Create a new application:
-=========================
+-------------------------
 
     rhc app create thingcollector python-2.7
 
@@ -34,20 +35,20 @@ Create a new application:
 something else if necessary.
 
 Pull the thingcollector code into your application repo
-=======================================================
+-------------------------------------------------------
 
     cd thingcollector
     git remote add upstream -m master git://github.com/jreinhardt/thingcollector.git
     git pull -s recursive -X theirs upstream master
 
 Push your application repo to the gear
-======================================
+--------------------------------------
 
     git push
 
 
 Configuration
-=============
+-------------
 
 The configuration options for the thingcollector reside outside the code repo,
 as they contain a secret key that should not be made public.
@@ -71,7 +72,7 @@ get analytics enabled on the thingcollector by specifying
     PIWIK_ID = "the site id of the thingcollector assigned in your piwik"
 
 Test the app
-============
+------------
 
 Now you should be able to access your thingcollector instance at
 `http://thingcollector-yourdomain.rhcloud.com`. If you created your application
@@ -80,7 +81,7 @@ you created the application.
 
 
 Make the collector known to the network
-=======================================
+---------------------------------------
 
 Submit the tracker of your collector to one or two other collectors, and their
 trackers to your collector. This way your collector learns about all the
@@ -93,7 +94,7 @@ An instance of the thingcollector is running
 
 
 Updating the collector code
-===========================
+---------------------------
 
 You should check regularly if the thingcollector code has been improved. You
 can update your collector by pulling the changes from the upstream repo and
