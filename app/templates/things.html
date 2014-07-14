@@ -2,10 +2,15 @@
 
 {% block content %}
 	<h1>Known Things</h1>
+	<label>The things that are known to this collector</label>
 	<table class="table table-striped table-bordered">
 		<tbody>
 		{% for thing in things %}
-			<tr><td>{{ thing.title }}</td></tr>
+			{% if thing.url != "" %}
+				<tr><td><a href="{{ thing.url }}">{{ thing.title }}</a></td></tr>
+			{% else %}
+				<tr><td>{{ thing.title }}</td></tr>
+			{% endif %}
 		{% endfor %}
 		</tbody>
 	</table>

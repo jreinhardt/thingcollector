@@ -2,11 +2,12 @@
 
 {% block content %}
 	<h1>Submit Trackers</h1>
+	<label>Tell this collector about a Thingtracker</label>
 	{% if messages %}
 		<div class="form-group has-error">
 			<form method="POST" action="/submit">
 				{{ form.csrf_token }}
-				{{ form.url.label }} {{ form.url(size=20) }}
+				{{ form.url(size=20) }}
 				<input type="submit" value="Go">
 			</form>
 		</div>
@@ -22,7 +23,7 @@
 	<div class="form-group">
 		<form method="POST" action="/submit">
 			{{ form.csrf_token }}
-			{{ form.url.label }} {{ form.url(size=20) }}
+			{{ form.url(size=20) }}
 			<input type="submit" value="Go">
 		</form>
 	</div>

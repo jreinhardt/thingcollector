@@ -143,7 +143,7 @@ def index():
 def list_trackers():
     searcher = tracker_idx.searcher()
     trackers = [tracker for tracker in searcher.all_stored_fields()]
-    return render_template('list.html',trackers=trackers,config=config)
+    return render_template('trackers.html',trackers=trackers,config=config)
 
 @app.route('/list/things')
 def list_things():
