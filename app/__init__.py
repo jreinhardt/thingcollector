@@ -60,8 +60,8 @@ app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
 
 config = {}
 if 'PIWIK_URL' in app.config and 'PIWIK_ID' in app.config:
-    config['piwik_url'] = app.config['PIWIK_URL']
-    config['piwik_id'] = app.config['PIWIK_ID']
+    for conf in ['PIWIK_URL', 'PIWIK_ID','TRACKER_UUID','TRACKER_URL','MAINTAINER_NAME','MAINTAINER_EMAIL']:
+        config[conf] = app.config[conf]
 
 def scan_tracker(url):
     messages = []
@@ -176,6 +176,13 @@ def submit():
         if len(messages) == 0:
             return redirect(url_for("submit"))
     return render_template('submit.html', form=form, messages = messages,config=config)
+
+@app.route('/tracker')
+def tracker():
+    searcher = tracker_idx.searcher()
+    trackers = [tracker for tracker in searcher.all_stored_fields()]
+    return render_template('tracker.json',config = config, trackers = trackers)
+
 
 if __name__ == '__main__':
     app.run()
