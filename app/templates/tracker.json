@@ -1,14 +1,14 @@
 {
    "version":0.0,
-   "id" : {{ config.TRACKER_UUID }},
-   "url" : {{ config.TRACKER_URL }},
+   "id" : "{{ config.TRACKER_UUID }}",
+   "url" : "{{ config.TRACKER_URL }}",
    "thingsCount" : 0,
-   "trackersCount" : {{ trackers|length }},
+   "trackersCount" : "{{ trackers|length }}",
    "trackersTraversalDepth" : 1,
    "maintainers" : [
       {
-         "url" :  {{ config.MAINTAINER_EMAIL }},
-         "name" : {{ config.MAINTAINER_NAME }}
+         "url" :  "{{ config.MAINTAINER_EMAIL }}",
+         "name" : "{{ config.MAINTAINER_NAME }}"
       }
    ],
    "things":[],
@@ -16,7 +16,7 @@
       {% for tracker in trackers %}
       {
          "url" : {{ tracker.url }}
-      }
+      }{%- if not loop.last %},{% endif %}
       {% endfor %}
    ]
 }
