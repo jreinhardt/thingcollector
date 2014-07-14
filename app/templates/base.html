@@ -6,20 +6,20 @@
 		<script src="/static/jquery-2.1.1.min.js"></script>
 		<script src="/static/bootstrap.min.js"></script>
 		{% block tracking %}
-		{% if config.piwik_url is defined and config.piwik_id is defined %}
+		{% if config.PIWIK_URL is defined and config.PIWIK_ID is defined %}
 			<script type="text/javascript">
 				var _paq = _paq || [];
 					_paq.push(['trackPageView']);
 				_paq.push(['enableLinkTracking']);
 					(function() {
-					 var u=(("https:" == document.location.protocol) ? "https" : "http") + "://{{ config.piwik_url }}/";
+					 var u=(("https:" == document.location.protocol) ? "https" : "http") + "://{{ config.PIWIK_URL }}/";
 					 _paq.push(['setTrackerUrl', u+'piwik.php']);
-					 _paq.push(['setSiteId', {{ config.piwik_id }}]);
+					 _paq.push(['setSiteId', {{ config.PIWIK_ID }}]);
 					 var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0]; g.type='text/javascript';
 					 g.defer=true; g.async=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
 				 })();
 			</script>
-			<noscript><p><img src="http://{{ config.piwik_url }}/piwik.php?idsite={{ config.piwik_id }}" style="border:0;" alt="" /></p></noscript>
+			<noscript><p><img src="http://{{ config.PIWIK_URL }}/piwik.php?idsite={{ config.PIWIK_ID }}" style="border:0;" alt="" /></p></noscript>
 		{% endif %}
 		{% endblock %}
 		<style>
