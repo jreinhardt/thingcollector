@@ -15,7 +15,7 @@
    "trackers":[
       {% for tracker in trackers %}
       {
-         "url" : {{ tracker.url }}
+         "url" : "{{ tracker.url }}"
       }{%- if not loop.last %},{% endif %}
       {% endfor %}
    ]
