@@ -33,15 +33,22 @@ from jsonschema import Draft3Validator
 import json
 from datetime import datetime
 
+INDEX_VERSION = 1
+
 whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
 
 ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema.json")).read())
 validator = Draft3Validator(ttn_schema)
 
-if False or not exists(whoosh_dir):
-    if exists(whoosh_dir):
-        rmtree(whoosh_dir)
+def initialize_index():
     mkdir(whoosh_dir)
+
+    index_schema = whoosh.fields.Schema(
+        version = whoosh.fields.NUMERIC(stored = True)
+    )
+    index_idx = whoosh.index.create_in(whoosh_dir, index_schema, indexname = "index")
+    with index_idx.writer() as writer:
+        writer.add_document(version = INDEX_VERSION)
 
     tracker_schema = whoosh.fields.Schema(
         url = whoosh.fields.ID(stored = True, unique = True),
@@ -61,22 +68,7 @@ if False or not exists(whoosh_dir):
         tags = whoosh.fields.TEXT()
     )
     thing_idx = whoosh.index.create_in(whoosh_dir, thing_schema, indexname = "things")
-
-
-else:
-    tracker_idx = whoosh.index.open_dir(whoosh_dir, indexname = "trackers")
-    thing_idx = whoosh.index.open_dir(whoosh_dir, indexname = "things")
-
-thing_parser = MultifieldParser(['title','description','tags','licenses'],schema = thing_idx.schema)
-tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
-
-app = Flask(__name__)
-app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
-
-config = {}
-if 'PIWIK_URL' in app.config and 'PIWIK_ID' in app.config:
-    for conf in ['PIWIK_URL', 'PIWIK_ID','TRACKER_UUID','TRACKER_URL','MAINTAINER_NAME','MAINTAINER_EMAIL']:
-        config[conf] = app.config[conf]
+    return (index_idx,tracker_idx,thing_idx)
 
 def scan_tracker(url):
     messages = []
@@ -142,6 +134,38 @@ def scan_tracker(url):
         for subtracker in tracker["trackers"]:
             messages += scan_tracker(subtracker["url"])
     return messages
+
+
+if not exists(whoosh_dir):
+    print "Creating index"
+    index_idx,tracker_idx,thing_idx = initialize_index()
+else:
+    tracker_idx = whoosh.index.open_dir(whoosh_dir, indexname = "trackers")
+    thing_idx = whoosh.index.open_dir(whoosh_dir, indexname = "things")
+    index_idx = whoosh.index.open_dir(whoosh_dir, indexname = "index")
+
+    with index_idx.searcher() as searcher:
+        version = list(searcher.all_stored_fields())[0]["version"]
+
+    if version != INDEX_VERSION:
+        print "Recreating index"
+        with tracker_idx.searcher() as searcher:
+            tracker_urls = [tracker["url"] for tracker in searcher.all_stored_fields()]
+            rmtree(whoosh_dir)
+            index_idx,tracker_idx,thing_idx = initialize_index()
+            for url in tracker_urls:
+                scan_tracker(url)
+
+thing_parser = MultifieldParser(['title','description','tags','licenses'],schema = thing_idx.schema)
+tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
+
+app = Flask(__name__)
+app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
+
+config = {}
+if 'PIWIK_URL' in app.config and 'PIWIK_ID' in app.config:
+    for conf in ['PIWIK_URL', 'PIWIK_ID','TRACKER_UUID','TRACKER_URL','MAINTAINER_NAME','MAINTAINER_EMAIL']:
+        config[conf] = app.config[conf]
 
 class SubmissionForm(Form):
     url = TextField("url",validators=[DataRequired(),URL(require_tld=True)])
