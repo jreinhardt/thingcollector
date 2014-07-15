@@ -154,6 +154,10 @@ class SearchForm(Form):
 def index():
     return redirect(url_for("search"))
 
+@app.route('/about')
+def about():
+    return render_template('about.html',config=config)
+
 @app.route('/list/trackers')
 def list_trackers():
     searcher = tracker_idx.searcher()
@@ -168,17 +172,19 @@ def list_things():
 
 @app.route('/search', methods=('GET', 'POST'))
 def search():
-    results = []
+    results = None
     query = request.args.get('q','')
     form = SearchForm()
 
-    if query == '' and form.validate_on_submit():
+    if query == '':
+        if form.validate_on_submit():
             return redirect(url_for('search',q=form.query.data))
-
-    with thing_idx.searcher() as searcher:
-        hits = searcher.search(thing_parser.parse(query))
-        for i in range(hits.scored_length()):
-            results.append(hits[i].fields())
+    else:
+        with thing_idx.searcher() as searcher:
+            results = []
+            hits = searcher.search(thing_parser.parse(query))
+            for i in range(hits.scored_length()):
+                results.append(hits[i].fields())
     return render_template('search.html', form=form,query=query,results=results,config=config)
 
 @app.route('/submit', methods=('GET', 'POST'))

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-md-6 col-xs-12">
+			<h1>About</h1>
+			<label>What is thing collector</label>
+
+			<p>The thingcollector is a web application that provides a full text search for
+			the <a href="https://thingtracker.net">thingtracker network</a>. It is written in
+			<a href="http://python.org">python</a>, using <a href="http://flask.pocoo.org/">flask</a> and
+			<a href="https://pythonhosted.org/Whoosh/index.html">whoosh</a>, with easy deployment on
+			<a href="https://www.openshift.com/">OpenShift</a> in mind. The frontend is based on
+			<a href="http://getbootstrap.com/">bootstrap</a>.</p>
+
+			<p>It is licensed under the <a href="http://www.gnu.org/licenses/agpl.html">AGPL3</a>.</p>
+		</div>
+		<div class="col-md-6 col-xs-12">
+			<h1>Contribute</h1>
+			<label>How can I help?</label>
+			
+			<p>You can help by publishing things on the <a href="https://thingtracker.net">thingtracker network</a>, <a href="/submit">submit trackers</a> to the collector, <a href="https://github.com/jreinhardt/thingcollector">run your own collector</a>, <a href="https://github.com/jreinhardt/thingcollector">or hack the source</a>.</p>
+
+		</div>
+	</div>
+
+
+{% endblock %}
