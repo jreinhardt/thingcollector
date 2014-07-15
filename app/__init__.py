@@ -33,7 +33,7 @@ from jsonschema import Draft3Validator
 import json
 from datetime import datetime
 
-INDEX_VERSION = 1
+INDEX_VERSION = 2
 
 whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
 
@@ -59,27 +59,27 @@ def initialize_index():
     tracker_idx = whoosh.index.create_in(whoosh_dir, tracker_schema, indexname = "trackers")
 
     thing_schema = whoosh.fields.Schema(
-        id = whoosh.fields.ID(unique = True),
+        id = whoosh.fields.ID(unique = True,stored = True),
         url = whoosh.fields.TEXT(stored = True),
         title = whoosh.fields.TEXT(stored = True),
-        description = whoosh.fields.TEXT(),
-        authors = whoosh.fields.TEXT(),
-        licenses = whoosh.fields.TEXT(),
-        tags = whoosh.fields.TEXT()
+        description = whoosh.fields.TEXT(stored = True),
+        authors = whoosh.fields.TEXT(stored = True),
+        licenses = whoosh.fields.TEXT(stored = True),
+        tags = whoosh.fields.TEXT(stored = True)
     )
     thing_idx = whoosh.index.create_in(whoosh_dir, thing_schema, indexname = "things")
     return (index_idx,tracker_idx,thing_idx)
 
 def scan_tracker(url):
     messages = []
-    r = requests.get(url)
+    r_tracker = requests.get(url)
 
     #skip unreachable trackers
-    if not r.status_code == requests.codes.ok:
+    if not r_tracker.status_code == requests.codes.ok:
         messages.append("Skipping unreachable tracker %s" % url)
         return messages
 
-    tracker = r.json()
+    tracker = r_tracker.json()
 
     if not validator.is_valid(tracker):
         messages.append("Skipping invalid tracker %s" % tracker["url"])
@@ -113,6 +113,13 @@ def scan_tracker(url):
     if "things" in tracker:
         with thing_idx.writer() as writer:
             for thing in tracker["things"]:
+                if "refUrl" in thing:
+                    r_thing = requests.get(thing["refUrl"])
+                    if not r_thing.status_code == requests.codes.ok:
+                        messages.append("Skipping unreachable thing %s" % thing["refUrl"])
+                    thing.update(r_thing.json())
+
+                #fill in default values if necessary
                 for opt in ['url','description']:
                     if not opt in thing:
                         thing[opt] = u''
