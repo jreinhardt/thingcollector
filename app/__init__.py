@@ -165,6 +165,7 @@ else:
 
 thing_parser = MultifieldParser(['title','description','tags','licenses'],schema = thing_idx.schema)
 tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
+id_parser = QueryParser('id',schema = thing_idx.schema)
 
 app = Flask(__name__)
 app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
@@ -200,6 +201,15 @@ def list_things():
     searcher = thing_idx.searcher()
     things = [thing for thing in searcher.all_stored_fields()]
     return render_template('things.html',things=things,config=config)
+
+@app.route('/show/thing/<thing_id>')
+def show_thing(thing_id):
+    with thing_idx.searcher() as searcher:
+        hits = searcher.search(id_parser.parse(thing_id))
+        if len(hits) == 0:
+            return render_template('thing.html',thing = None,config=config)
+        else:
+            return render_template('thing.html',thing = hits[0],config=config)
 
 @app.route('/search', methods=('GET', 'POST'))
 def search():

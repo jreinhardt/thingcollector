@@ -9,7 +9,7 @@
 			{% if thing.url != "" %}
 				<tr><td><a href="{{ thing.url }}">{{ thing.title }}</a></td></tr>
 			{% else %}
-				<tr><td>{{ thing.title }}</td></tr>
+				<tr><td><a href="/show/thing/{{ thing.id }}">{{ thing.title }}</a></td></tr>
 			{% endif %}
 		{% endfor %}
 		</tbody>

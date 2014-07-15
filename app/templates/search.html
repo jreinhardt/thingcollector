@@ -20,7 +20,7 @@
 				{% if result.url != "" %}
 					<td><a href={{result.url}}>{{ result.title }}</a></td>
 				{% else %}
-					<td>{{ result.title }}</td>
+					<td><a href="/show/thing/{{ thing.id }}">{{ thing.title }}</a></td>
 				{% endif %}
 				</tr>
 			{% endfor %}

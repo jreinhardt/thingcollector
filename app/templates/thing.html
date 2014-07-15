@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div class="row">
+		{% if thing is none %}
+				<h1>No thing found</h1>
+		{% else %}
+			<div class="col-md-8 col-xs-12">
+				<h1>{{ thing.title }}</h1>
+
+				{{ thing.description }}
+			</div>
+			<div class="col-md-4 col-xs-12">
+				{% if thing.authors != "" %}
+					<h3>Authors</h1>
+					{{ thing.authors }}
+				{% endif %}
+
+				{% if thing.licenses != "" %}
+					<h3>License</h1>
+					{{ thing.licenses }}
+				{% endif %}
+
+				{% if thing.tags != "" %}
+					<h3>Tags</h1>
+					{{ thing.tags }}
+				{% endif %}
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}
