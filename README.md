@@ -103,5 +103,4 @@ pushing them to your gear.
     git pull -s recursive -X theirs upstream master
     git push
 
-The data that the tracker collected is left untouched, unless there was a
-database schema change, in which case instructions will be provided.
+The data that the tracker collected is automatically reindex if necessary.
