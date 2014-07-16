@@ -31,12 +31,27 @@ import sys
 import requests
 from jsonschema import Draft3Validator
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import bleach
+import apscheduler
+from apscheduler.scheduler import Scheduler
 
 INDEX_VERSION = 2
 
 whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
+
+class NowTrigger:
+    def __init__(self):
+        self.triggered = False
+    def get_next_fire_time(self,start):
+        if not self.triggered:
+            self.triggered = True
+            return start
+        else:
+            return None
+
+scheduler = Scheduler()
+scheduler.start()
 
 ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema.json")).read())
 validator = Draft3Validator(ttn_schema)
@@ -71,28 +86,7 @@ def initialize_index():
     thing_idx = whoosh.index.create_in(whoosh_dir, thing_schema, indexname = "things")
     return (index_idx,tracker_idx,thing_idx)
 
-def scan_tracker(url):
-    messages = []
-    r_tracker = requests.get(url)
-
-    #skip unreachable trackers
-    if not r_tracker.status_code == requests.codes.ok:
-        messages.append("Skipping unreachable tracker %s" % url)
-        return messages
-
-    tracker = r_tracker.json()
-
-    if not validator.is_valid(tracker):
-        messages.append("Skipping invalid tracker %s" % tracker["url"])
-        for error in validator.iter_errors(tracker):
-            messages.append("%s not conforming to spec: %s" % (url,error.message))
-        return messages
-
-    with tracker_idx.searcher() as searcher:
-        if len(searcher.search(Term("url",url))) == 1:
-            messages.append("Skipping known tracker %s" % url)
-            return messages
-
+def index_tracker(tracker):
     with tracker_idx.writer() as writer:
         for opt in ["description"]:
             if not opt in tracker:
@@ -111,6 +105,8 @@ def scan_tracker(url):
             accessed = tracker["accessed"],
             updated = tracker["updated"]
         )
+
+def index_things(tracker):
     if "things" in tracker:
         with thing_idx.writer() as writer:
             for thing in tracker["things"]:
@@ -137,6 +133,32 @@ def scan_tracker(url):
                     licenses = bleach.clean(u" ".join([l for l in thing["licenses"]])),
                     tags = bleach.clean(u", ".join([t for t in thing["tags"]]))
                 )
+
+def crawl_trackers(tracker_url):
+    messages = []
+    r_tracker = requests.get(tracker_url)
+
+    #skip unreachable trackers
+    if not r_tracker.status_code == requests.codes.ok:
+        messages.append("Skipping unreachable tracker %s" % tracker_url)
+        return messages
+
+    tracker = r_tracker.json()
+
+    if not validator.is_valid(tracker):
+        messages.append("Skipping invalid tracker %s" % tracker["url"])
+        for error in validator.iter_errors(tracker):
+            messages.append("%s not conforming to spec: %s" % (tracker_url,error.message))
+        return messages
+
+    with tracker_idx.searcher() as searcher:
+        if len(searcher.search(Term("url",url))) == 1:
+            messages.append("Skipping known tracker %s" % tracker_url)
+            return messages
+
+    index_tracker(tracker)
+    index_things(tracker)
+
 
     if "trackers" in tracker:
         for subtracker in tracker["trackers"]:
@@ -234,10 +256,7 @@ def submit():
     messages = []
     form = SubmissionForm()
     if form.validate_on_submit():
-        messages = scan_tracker(form.url.data)
-        print messages
-        if len(messages) == 0:
-            return redirect(url_for("submit"))
+        scheduler.add_job(NowTrigger(),scan_tracker,[form.url.data],{})
     return render_template('submit.html', form=form, messages = messages,config=config)
 
 @app.route('/tracker')
