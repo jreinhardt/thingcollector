@@ -27,6 +27,7 @@ from whoosh.analysis import CharsetFilter, StemmingAnalyzer
 from whoosh.support.charset import accent_map
 from whoosh.query import *
 from whoosh.qparser import QueryParser, MultifieldParser
+from whoosh.writing import AsyncWriter
 import sys
 import requests
 from jsonschema import Draft3Validator
@@ -35,6 +36,8 @@ from datetime import datetime, timedelta
 import bleach
 import apscheduler
 from apscheduler.scheduler import Scheduler
+import logging
+from logging.handlers import RotatingFileHandler
 
 INDEX_VERSION = 2
 
@@ -56,6 +59,20 @@ scheduler.start()
 ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema.json")).read())
 validator = Draft3Validator(ttn_schema)
 
+app = Flask(__name__)
+app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
+
+log_handler = RotatingFileHandler(join(environ['OPENSHIFT_LOG_DIR'],'collector.log'),maxBytes=2**20,backupCount=3)
+log_handler.setLevel(logging.INFO)
+log_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s '
+    '[in %(pathname)s:%(lineno)d]'
+))
+
+app.logger.addHandler(log_handler)
+logging.getLogger().addHandler(log_handler)
+
+
 def initialize_index():
     mkdir(whoosh_dir)
 
@@ -63,7 +80,7 @@ def initialize_index():
         version = whoosh.fields.NUMERIC(stored = True)
     )
     index_idx = whoosh.index.create_in(whoosh_dir, index_schema, indexname = "index")
-    with index_idx.writer() as writer:
+    with AsyncWriter(index_idx) as writer:
         writer.add_document(version = INDEX_VERSION)
 
     tracker_schema = whoosh.fields.Schema(
@@ -87,7 +104,10 @@ def initialize_index():
     return (index_idx,tracker_idx,thing_idx)
 
 def index_tracker(tracker):
-    with tracker_idx.writer() as writer:
+    """
+    write the tracker information of this tracker to the tracker index
+    """
+    with AsyncWriter(tracker_idx) as writer:
         for opt in ["description"]:
             if not opt in tracker:
                 tracker[opt] = u""
@@ -99,7 +119,7 @@ def index_tracker(tracker):
 
         tracker["accessed"] = datetime.now()
 
-        writer.add_document(
+        writer.update_document(
             url = tracker["url"],
             description = tracker["description"],
             accessed = tracker["accessed"],
@@ -107,8 +127,11 @@ def index_tracker(tracker):
         )
 
 def index_things(tracker):
+    """
+    write the things of this tracker to the thing index
+    """
     if "things" in tracker:
-        with thing_idx.writer() as writer:
+        with AsyncWriter(thing_idx) as writer:
             for thing in tracker["things"]:
                 if "refUrl" in thing:
                     r_thing = requests.get(thing["refUrl"])
@@ -135,26 +158,28 @@ def index_things(tracker):
                 )
 
 def crawl_trackers(tracker_url):
-    messages = []
+    """
+    Index this tracker and all of its subtrackers
+    """
     r_tracker = requests.get(tracker_url)
 
     #skip unreachable trackers
     if not r_tracker.status_code == requests.codes.ok:
-        messages.append("Skipping unreachable tracker %s" % tracker_url)
-        return messages
+        app.logger.info("Skipping unreachable tracker %s" % tracker_url)
+        return
 
     tracker = r_tracker.json()
 
     if not validator.is_valid(tracker):
-        messages.append("Skipping invalid tracker %s" % tracker["url"])
+        app.logger.info("Skipping invalid tracker %s" % tracker["url"])
         for error in validator.iter_errors(tracker):
-            messages.append("%s not conforming to spec: %s" % (tracker_url,error.message))
-        return messages
+            app.logger.info("%s not conforming to spec: %s" % (tracker_url,error.message))
+        return
 
     with tracker_idx.searcher() as searcher:
-        if len(searcher.search(Term("url",url))) == 1:
-            messages.append("Skipping known tracker %s" % tracker_url)
-            return messages
+        if len(searcher.search(Term("url",tracker_url))) == 1:
+            app.logger.info("Skipping known tracker %s" % tracker_url)
+            return
 
     index_tracker(tracker)
     index_things(tracker)
@@ -162,12 +187,19 @@ def crawl_trackers(tracker_url):
 
     if "trackers" in tracker:
         for subtracker in tracker["trackers"]:
-            messages += scan_tracker(subtracker["url"])
-    return messages
+            crawl_tracker(subtracker["url"])
+    return
 
+@scheduler.interval_schedule(hours=2)
+def update_trackers():
+    print "Start update"
+    app.logger.warning("Start update")
+    searcher = tracker_idx.searcher()
+    for tracker in searcher.all_stored_fields():
+        crawl_trackers(tracker['url'])
 
 if not exists(whoosh_dir):
-    print "Creating index"
+    app.logger.info("Index directory does not exist. Recreating index")
     index_idx,tracker_idx,thing_idx = initialize_index()
 else:
     tracker_idx = whoosh.index.open_dir(whoosh_dir, indexname = "trackers")
@@ -178,20 +210,17 @@ else:
         version = list(searcher.all_stored_fields())[0]["version"]
 
     if version != INDEX_VERSION:
-        print "Recreating index"
+        app.logger.info("Version mismatch %d vs. %d. Recreating index" % (version, INDEX_VERSION))
         with tracker_idx.searcher() as searcher:
             tracker_urls = [tracker["url"] for tracker in searcher.all_stored_fields()]
             rmtree(whoosh_dir)
             index_idx,tracker_idx,thing_idx = initialize_index()
             for url in tracker_urls:
-                scan_tracker(url)
+                crawl_trackers(url)
 
 thing_parser = MultifieldParser(['title','description','tags','licenses'],schema = thing_idx.schema)
 tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
 id_parser = QueryParser('id',schema = thing_idx.schema)
-
-app = Flask(__name__)
-app.config.from_pyfile(join(environ['OPENSHIFT_DATA_DIR'],'collector.cfg'))
 
 config = {}
 if 'PIWIK_URL' in app.config and 'PIWIK_ID' in app.config:
@@ -254,10 +283,43 @@ def search():
 @app.route('/submit', methods=('GET', 'POST'))
 def submit():
     messages = []
+    error = False
     form = SubmissionForm()
     if form.validate_on_submit():
-        scheduler.add_job(NowTrigger(),scan_tracker,[form.url.data],{})
-    return render_template('submit.html', form=form, messages = messages,config=config)
+        tracker_url = form.url.data
+        r_tracker = requests.get(tracker_url)
+
+        #skip unreachable trackers
+        if not r_tracker.status_code == requests.codes.ok:
+            messages.append("Tracker unreachable %s" % tracker_url)
+            return messages, True
+
+        if not error:
+            tracker = r_tracker.json()
+
+            if tracker_url != tracker["url"]:
+                messages.append("Tracker url inconsistent: %s vs. %s" % (tracker_url, tracker["url"]))
+
+            if not validator.is_valid(tracker):
+                messages.append("Tracker invalid %s" % tracker["url"])
+                error = True
+                for msg in validator.iter_errors(tracker):
+                    messages.append("Tracker %s not conforming to spec: %s" % (tracker_url,msg.message))
+
+        if not error:
+            with tracker_idx.searcher() as searcher:
+                if len(searcher.search(Term("url",tracker_url))) == 1:
+                    messages.append("Skipping known tracker %s" % tracker_url)
+
+        scheduler.add_job(NowTrigger(),index_tracker,[tracker],{})
+        scheduler.add_job(NowTrigger(),index_things,[tracker],{})
+
+        if "trackers" in tracker:
+            for subtracker in tracker["trackers"]:
+                scheduler.add_job(NowTrigger(),crawl_trackers,[subtracker["url"]],{})
+        if len(messages) == 0:
+            return redirect(url_for("submit"))
+    return render_template('submit.html', form=form, messages = messages,config=config, error = error)
 
 @app.route('/tracker')
 def tracker():
