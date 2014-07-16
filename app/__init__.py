@@ -32,6 +32,7 @@ import requests
 from jsonschema import Draft3Validator
 import json
 from datetime import datetime
+import bleach
 
 INDEX_VERSION = 2
 
@@ -129,12 +130,12 @@ def scan_tracker(url):
 
                 writer.update_document(
                     id = thing["id"],
-                    url = thing["url"],
-                    title = thing["title"],
-                    description = thing["description"],
-                    authors = u" ".join([a["name"] for a in thing["authors"]]),
-                    licenses = u" ".join([l for l in thing["licenses"]]),
-                    tags = u", ".join([t for t in thing["tags"]])
+                    url = bleach.clean(thing["url"]),
+                    title = bleach.clean(thing["title"]),
+                    description = bleach.linkify(bleach.clean(thing["description"])),
+                    authors = bleach.clean(u" ".join([a["name"] for a in thing["authors"]])),
+                    licenses = bleach.clean(u" ".join([l for l in thing["licenses"]])),
+                    tags = bleach.clean(u", ".join([t for t in thing["tags"]]))
                 )
 
     if "trackers" in tracker:
