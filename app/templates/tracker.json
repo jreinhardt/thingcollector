@@ -3,7 +3,7 @@
    "id" : "{{ config.TRACKER_UUID }}",
    "url" : "{{ config.TRACKER_URL }}",
    "thingsCount" : 0,
-   "trackersCount" : "{{ trackers|length }}",
+   "trackersCount" : {{ trackers|length }},
    "trackersTraversalDepth" : 1,
    "maintainers" : [
       {
