@@ -192,7 +192,6 @@ def crawl_trackers(tracker_url):
 
 @scheduler.interval_schedule(hours=2)
 def update_trackers():
-    print "Start update"
     app.logger.warning("Start update")
     searcher = tracker_idx.searcher()
     for tracker in searcher.all_stored_fields():
