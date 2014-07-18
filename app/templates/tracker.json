@@ -1,7 +1,7 @@
 {
    "version":0.0,
    "id" : "{{ config.TRACKER_UUID }}",
-   "url" : "{{ config.TRACKER_URL }}",
+   "url" : "{{ config.TRACKER_URL }}\tracker",
    "thingsCount" : 0,
    "trackersCount" : {{ trackers|length }},
    "trackersTraversalDepth" : 1,
