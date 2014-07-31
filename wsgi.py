@@ -2,7 +2,7 @@
 
 if __name__ == '__main__':
     #when executed as a module, run in debug mode
-    from app import app
+    from thingcollector import app
     app.run(debug=True)
 else:
     #else set up virtualenv for openshift
@@ -15,4 +15,4 @@ else:
     except IOError:
         pass
 
-    from app import app as application
+    from thingcollector import app as application

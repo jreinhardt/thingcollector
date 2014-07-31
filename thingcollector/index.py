@@ -33,7 +33,7 @@ from jsonschema import Draft3Validator
 
 from datetime import datetime, timedelta
 
-ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"app","spec","schema.json")).read())
+ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"spec","schema.json")).read())
 validator = Draft3Validator(ttn_schema)
 
 INDEX_VERSION = 2
