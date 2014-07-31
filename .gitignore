@@ -1,9 +1,3 @@
 .openshift
-bin
-include
-index/**/*
-lib
-local
-**/*.swp
+**/.*.swp
 **/*.pyc
-collector.cfg
