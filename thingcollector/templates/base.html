@@ -2,10 +2,10 @@
 <html>
 	<head>
 		<title>Thingcollector</title>
-		<link href="/static/bootstrap.min.css" rel="stylesheet">
+		<link href="{{ url_for('static',filename='bootstrap.min.css') }}" rel="stylesheet">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-		<script src="/static/jquery-2.1.1.min.js"></script>
-		<script src="/static/bootstrap.min.js"></script>
+		<script src="{{ url_for('static',filename='jquery-2.1.1.min.js') }}"></script>
+		<script src="{{ url_for('static',filename='bootstrap.min.js') }}"></script>
 		{% block tracking %}
 		{% if config.PIWIK_URL is defined and config.PIWIK_ID is defined %}
 			<script type="text/javascript">
@@ -59,10 +59,10 @@
 				</div>
 				<div class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
-						<li><a href="/search">Search</a></li>
-						<li><a href="/list/trackers">Trackers</a></li>
-						<li><a href="/list/things">Things</a></li>
-						<li><a href="/submit">Submit Trackers</a></li>
+						<li><a href="{{ url_for('search') }}">Search</a></li>
+						<li><a href="{{ url_for('list_trackers') }}">Trackers</a></li>
+						<li><a href="{{ url_for('list_things') }}">Things</a></li>
+						<li><a href="{{ url_for('submit') }}">Submit Trackers</a></li>
 					</ul>
 				</div><!--/.nav-collapse -->
 			</div>

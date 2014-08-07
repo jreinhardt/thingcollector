@@ -4,7 +4,7 @@
 	<h1>Search</h1>
 	<label>Search the thingtracker network</label>
 
-	<form class="form-search" method="POST" action="/search">
+	<form class="form-search" method="POST" action="{{ url_for('search') }}">
 		{{ form.csrf_token }}
 		{{ form.query(size=20,value=query) }}
 		<input type="submit" class="btn btn-primary" value="Go">
@@ -20,7 +20,7 @@
 				{% if result.url != "" %}
 					<td><a href={{result.url}}>{{ result.title }}</a></td>
 				{% else %}
-					<td><a href="/show/thing/{{ result.id }}">{{ resutl.title }}</a></td>
+					<td><a href="{{ url_for('show_thing',thing_id=result.id) }}">{{ result.title }}</a></td>
 				{% endif %}
 				</tr>
 			{% endfor %}
