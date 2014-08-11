@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from os.path import exists,join
+from os.path import exists,join, dirname
 from os import environ, mkdir
 
 import whoosh
@@ -33,7 +33,7 @@ from jsonschema import Draft3Validator
 
 from datetime import datetime, timedelta
 
-ttn_schema = json.loads(open(join(environ["OPENSHIFT_REPO_DIR"],"spec","schema.json")).read())
+ttn_schema = json.loads(open(join(dirname(__file__),"spec","schema.json")).read())
 validator = Draft3Validator(ttn_schema)
 
 INDEX_VERSION = 2
