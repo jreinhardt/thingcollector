@@ -203,7 +203,7 @@ def get_thing(thing_id):
         if len(hits) == 0:
             return None
         else:
-            return hits[0]
+            return hits[0].fields()
 
 def get_things():
     with thing_idx.searcher() as searcher:

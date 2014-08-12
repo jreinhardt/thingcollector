@@ -62,6 +62,13 @@ def home():
 def about():
     return render_template('about.html',config=config)
 
+@app.route('/dereference/<id>')
+def dereference(id):
+    thing = index.get_thing(id)
+    if thing is None:
+        abort(404)
+    return redirect(thing['url'])
+
 @app.route('/list/trackers')
 def list_trackers():
     trackers = index.get_trackers()
