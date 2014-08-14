@@ -15,6 +15,7 @@
 
 from os.path import exists,join, dirname
 from os import environ, mkdir
+from shutil import rmtree
 
 import whoosh
 import whoosh.fields, whoosh.index

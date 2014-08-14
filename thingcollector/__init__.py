@@ -20,7 +20,6 @@ from wtforms.validators import DataRequired, URL
 
 from os import environ, mkdir
 from os.path import exists,join
-from shutil import rmtree
 import os.path
 import sys
 import logging
