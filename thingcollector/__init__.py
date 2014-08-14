@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import Flask, render_template, request, flash, redirect, url_for, g
+from flask import Flask, render_template, request, flash, redirect, url_for, g, abort
 from flask_wtf import Form
 from wtforms import TextField
 from wtforms.validators import DataRequired, URL
@@ -61,12 +61,27 @@ def home():
 def about():
     return render_template('about.html',config=config)
 
-@app.route('/dereference/<id>')
-def dereference(id):
-    thing = index.get_thing(id)
-    if thing is None:
+@app.route('/redirect/thing')
+def lookup_thing():
+    thing_url = None
+    if 'id' in request.args:
+        thing_url = index.get_thing(id)['url']
+
+    if thing_url is None:
         abort(404)
-    return redirect(thing['url'])
+    return redirect(thing_url)
+
+@app.route('/redirect/tracker')
+def lookup_tracker():
+    tracker_url = None
+    if 'thing_url' in request.args:
+        tracker_url = index.get_tracker_for_url(request.args['thing_url'])
+    elif 'thing_id' in request.args:
+        tracker_url = index.get_thing(request.args['thing_id'])['tracker']
+
+    if tracker_url is None:
+        abort(404)
+    return redirect(tracker_url)
 
 @app.route('/list/trackers')
 def list_trackers():

@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 ttn_schema = json.loads(open(join(dirname(__file__),"spec","schema.json")).read())
 validator = Draft3Validator(ttn_schema)
 
-INDEX_VERSION = 2
+INDEX_VERSION = 3
 
 whoosh_dir = join(environ["OPENSHIFT_DATA_DIR"],'index')
 
@@ -66,7 +66,8 @@ def initialize_index():
         description = whoosh.fields.TEXT(stored = True),
         authors = whoosh.fields.TEXT(stored = True),
         licenses = whoosh.fields.TEXT(stored = True),
-        tags = whoosh.fields.TEXT(stored = True)
+        tags = whoosh.fields.TEXT(stored = True),
+        tracker = whoosh.fields.ID(stored = True)
     )
     thing_idx = whoosh.index.create_in(whoosh_dir, thing_schema, indexname = "things")
     return (index_idx,tracker_idx,thing_idx)
@@ -122,7 +123,8 @@ def index_things(tracker):
                     description = bleach.linkify(bleach.clean(thing["description"])),
                     authors = bleach.clean(u" ".join([a["name"] for a in thing["authors"]])),
                     licenses = bleach.clean(u" ".join([l for l in thing["licenses"]])),
-                    tags = bleach.clean(u", ".join([t for t in thing["tags"]]))
+                    tags = bleach.clean(u", ".join([t for t in thing["tags"]])),
+                    tracker = tracker["url"]
                 )
 
 def crawl_trackers(tracker_url):
@@ -206,6 +208,14 @@ def get_thing(thing_id):
         else:
             return hits[0].fields()
 
+def get_tracker_for_url(thing_url):
+    with thing_idx.searcher() as searcher:
+        hits = searcher.search(thing_url_parser.parse(thing_url))
+        if len(hits) == 0:
+            return None
+        else:
+            return hits[0].fields()["tracker"]
+
 def get_things():
     with thing_idx.searcher() as searcher:
         things = [thing for thing in searcher.all_stored_fields()]
@@ -242,7 +252,7 @@ else:
                 crawl_trackers(url)
 
 thing_parser = MultifieldParser(['title','description','tags','licenses'],schema = thing_idx.schema)
+thing_url_parser = QueryParser('url',schema = thing_idx.schema)
 tracker_parser = MultifieldParser(['description'],schema = tracker_idx.schema)
 id_parser = QueryParser('id',schema = thing_idx.schema)
-
 
