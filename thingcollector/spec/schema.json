@@ -1,4 +1,5 @@
 {
+   "$schema":"http://json-schema.org/draft-03/schema#",
    "type":"object",
    "properties":{
       "id":{
@@ -83,7 +84,7 @@
                            "type":"string"
                         },
                         "xIdentityMetadata":{
-                           "$ref":"id-42300"
+                           "type":"object"
                         }
                      }
                   }
@@ -136,7 +137,7 @@
                               "type":"string"
                            },
                            "xIdentityMetadata":{
-                              "$ref":"id-42300"
+                              "type":"object"
                            }
                         }
                      }
@@ -181,7 +182,7 @@
                            "type":"string"
                         },
                         "xRelationshipMetadata":{
-                           "$ref":"id-42300"
+                           "type":"object"
                         }
                      }
                   }
@@ -217,7 +218,7 @@
                            "type":"string"
                         },
                         "xBomMetadata":{
-                           "$ref":"id-42300"
+                           "type":"object"
                         }
                      }
                   }
@@ -240,13 +241,13 @@
                            }
                         },
                         "xInstructionMetadata":{
-                           "$ref":"id-42300"
+                           "type":"object"
                         }
                      }
                   }
                },
                "xThingMetadata":{
-                  "$ref":"id-42300"
+                  "type":"object"
                }
             }
          },
@@ -267,12 +268,12 @@
                "pattern":"^\\d{4}-[01]?[0-9]{1}-[0123]?[0-9]{1}T[012]?[0-9]{1}:[0-5]?[0-9]{1}:[0-5]?[0-9]{1}\\.?\\d+(([+|-]{1}\\d+:\\d+)|Z?)$"
             },
             "xThingsCacheMetadata":{
-               "$ref":"id-42300"
+               "type":"object"
             }
          }
       },
       "xTrackerMetadata":{
-         "$ref":"id-42300"
+         "type":"object"
       },
       "trackers":{
          "type":"array",
@@ -309,7 +310,7 @@
                         "pattern":"^\\d{4}-[01]?[0-9]{1}-[0123]?[0-9]{1}T[012]?[0-9]{1}:[0-5]?[0-9]{1}:[0-5]?[0-9]{1}\\.?\\d+(([+|-]{1}\\d+:\\d+)|Z?)$"
                      },
                      "xThingsCacheMetadata":{
-                        "$ref":"id-42300"
+                        "type":"object"
                      }
                   }
                }
